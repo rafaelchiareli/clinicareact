@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { listarPacientes, cadastrarPaciente } from "../services/pacienteService";
+import { listarPacientes, cadastrarPaciente, excluirPaciente, atualizarPaciente } from "../services/pacienteService";
 const pacienteInicial = {
     nome: "",
     cpf: "",
@@ -15,10 +15,48 @@ export default function PacientesPage() {
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
     const [mensagem, setMensagem] = useState("");
+    const [pacienteEmEdicao, setPacienteEmEdicao] = useState(null);
+    const [excluindoId, setExcluindoId] = useState(null);
+
 
     useEffect(() => {
         carregarPacientes();
     }, []);
+
+    function iniciarEdicao(paciente) {
+        setPacienteEmEdicao(paciente);
+        setPaciente({
+            nome: paciente.nome,
+            cpf: paciente.cpf,
+            telefone: paciente.telefone,
+            dataNascimento: paciente.dataNascimento.slice(0, 10)
+        });
+        setErro("");
+        setMensagem("");
+    }
+
+    function cancelarEdicao() {
+        setPacienteEmEdicao(null);
+        setPaciente(pacienteInicial);
+    }
+
+    async function removerPaciente(paciente) {
+        const confirmou = window.confirm(
+            `Deseja excluir o paciente ${paciente.nome}?`
+        );
+        if (!confirmou) return;
+        try {
+            setExcluindoId(paciente.id);
+            setErro("");
+            await excluirPaciente(paciente.id);
+
+            setPacientes(atual => atual.filter(item => item.id !== paciente.id));
+        } catch (error) {
+            setErro(error.mensage);
+        } finally {
+            setExcluindoId(null);
+        }
+    }
 
     async function carregarPacientes() {
         try {
@@ -49,10 +87,22 @@ export default function PacientesPage() {
             setSalvando(true);
             setErro("");
             setMensagem("");
-            const novoPaciente = await cadastrarPaciente(paciente);
-            setPacientes(estadoAtual => [...estadoAtual, novoPaciente]);
-            setPaciente(pacienteInicial);
-            setMensagem("Paciente cadastrado com sucesso");
+
+            if (pacienteEmEdicao) {
+                const pacienteAtualizado = await
+                    atualizarPaciente(pacienteEmEdicao.id, paciente);
+                setPacientes(atual => atual.map(paciente =>
+                    paciente.id === pacienteAtualizado.id ? pacienteAtualizado : paciente));
+                setMensagem("Paciente atualzado com sucesso");
+
+            }
+            else {
+                const novoPaciente = await cadastrarPaciente(paciente);
+                setPacientes(estadoAtual => [...estadoAtual, novoPaciente]);
+                setPaciente(pacienteInicial);
+                setMensagem("Paciente cadastrado com sucesso");
+            }
+            cancelarEdicao();
         } catch (error) {
             setErro(error.message);
         } finally {
@@ -91,6 +141,12 @@ export default function PacientesPage() {
                                 <strong>{paciente.nome}</strong>
                                 <strong>{paciente.cpf}</strong>
                                 <strong>{paciente.telefone}</strong>
+                                <button type="button" onClick={
+                                    () => iniciarEdicao(paciente)}>Editar
+                                </button>
+                                <button type="button"
+                                onClick={() => removerPaciente(paciente)}
+                                
                             </article>
                         )))
 
