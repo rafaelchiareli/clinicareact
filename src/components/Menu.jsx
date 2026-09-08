@@ -8,6 +8,8 @@ export default function Menu() {
             <nav>
                 <NavLink to="/">Início</NavLink>
                 <NavLink to="/pacientes">Pacientes</NavLink>
+                <NavLink to="/especialidades">Especialidades</NavLink>
+                <NavLink to="/profissionais">Profissionais</NavLink>
             </nav>
         </header>
 
