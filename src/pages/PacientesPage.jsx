@@ -124,9 +124,16 @@ export default function PacientesPage() {
                 <input name="dataNascimento" placeholder="Data de Nascimento" value={paciente.dataNascimento} onChange={alterarCampo}>
                 </input>
                 <button disabled={salvando}>
-                    {salvando ? "Salvando" : "Cadastrar"}
+                    {salvando 
+                    ? "Salvando" 
+                    : pacienteEmEdicao ? "Salvar alterações"    
+                    :"Cadastrar"}
                 </button>
-
+                        {pacienteEmEdicao && (
+                            <button type="button" onClick={cancelarEdicao}>
+                                Cancelar
+                            </button>
+                        )}
             </form>
 
             <section>
@@ -146,7 +153,13 @@ export default function PacientesPage() {
                                 </button>
                                 <button type="button"
                                 onClick={() => removerPaciente(paciente)}
-                                
+                                disabled={excluindoId === paciente.id}
+                                >
+                                    {excluindoId === paciente.id
+                                     ? "Exluindo..." 
+                                     :"Excluir"}
+                                </button>
+
                             </article>
                         )))
 
