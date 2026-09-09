@@ -17,6 +17,30 @@ export default function EspecialidadesPage() {
         carregarEspecialidades();
     },[])
 
+    function handleChange(event){
+        const {name, value} = event.target;
+        setEspecialidade(atual => ({...atual,[name]: value}));
+    }
+
+    async function handleSubmit(event){
+        event.preventDefault();
+        try{
+         
+            setSalvando(true);
+            setErro('');
+            setMensagem('');
+            const novaEspecialidade = await cadastrarEspecialidade(especialidade);
+            setListaEspecialidades(atual => [...atual, novaEspecialidade]);
+            setEspecialidade(especialidadeInicial);
+            setMensagem("Especialidade Cadastrada com sucesso");
+
+        }catch (error){
+            setErro(error.message);
+        }finally{
+            setSalvando(false);
+        }
+    }
+
     async function carregarEspecialidades() {
         try {
             setCarregando(true);
@@ -32,6 +56,18 @@ export default function EspecialidadesPage() {
 
     return (
         <>
+        <form className="formulario" onSubmit={handleSubmit}>
+            <label htmlFor="nome">Nome</label>
+            <input id='nome' value={especialidade.nome} name='nome' 
+            onChange={handleChange} required/>
+
+            <label htmlFor="descricao">Descrição</label>
+            <input id='descricao' value={especialidade.descricao} name='descricao' 
+            onChange={handleChange} required/>
+
+            <button disabled={salvando}>{salvando ? "Salvando" : "Cadastrar"}</button>
+        </form>
+        {mensagem && <p>{mensagem}</p>}
             {carregando ? (<p>Carregando especialidades...</p>)
                 : listaEspecialidades.length === 0 ?
                     (<p>Nenhuma especialidade cadastrada</p>)
